@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CutTheSlop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ================================================================
+       DESIGN TOKENS
+    ================================================================ */
+    :root {
+      --bg-popup:           #0d0d1c;
+      --bg-card:            #141428;
+      --bg-card-hover:      #1a1a34;
+      --bg-divider:         rgba(255,255,255,.07);
+      --border-subtle:      rgba(99,102,241,.14);
+      --border-card:        rgba(255,255,255,.055);
+      --text-primary:       #f0f4ff;
+      --text-secondary:     #c4cde0;
+      --text-muted:         #7c8aa0;
+      --text-label:         #4e596e;
+      --accent:             #6366f1;
+      --accent-mid:         #8b5cf6;
+      --accent-light:       #a78bfa;
+      --accent-glow:        rgba(99,102,241,.32);
+      --accent-glow-soft:   rgba(99,102,241,.10);
+      --green:              #10b981;
+      --green-glow:         rgba(16,185,129,.2);
+      --grad-brand:         linear-gradient(135deg,#6366f1 0%,#8b5cf6 55%,#a78bfa 100%);
+      --grad-brand-btn:     linear-gradient(135deg,#6d6ff0 0%,#9061f5 50%,#b07dff 100%);
+      --grad-green:         linear-gradient(135deg,#10b981,#34d399);
+      --sh-logo:            0 2px 14px rgba(99,102,241,.5), 0 0 0 1px rgba(255,255,255,.1) inset;
+      --sh-btn:             0 4px 20px rgba(109,111,240,.55), 0 1px 4px rgba(99,102,241,.3);
+      --sh-btn-hover:       0 8px 32px rgba(109,111,240,.7), 0 2px 8px rgba(99,102,241,.4);
+      --sh-popup:           0 24px 60px rgba(0,0,0,.7), 0 0 0 1px rgba(99,102,241,.1);
+      --r-popup:            16px;
+      --r-btn:              12px;
+      --r-logo:             12px;
+      --ease-out:           cubic-bezier(.22,1,.36,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+      width: 360px;
+      background: var(--bg-popup);
+      color: var(--text-primary);
+      overflow: hidden;
+      position: relative;
+      border-radius: var(--r-popup);
+      box-shadow: var(--sh-popup);
+      animation: popupIn .32s var(--ease-out) both;
+    }
+    @keyframes popupIn {
+      from { opacity:0; transform:translateY(6px) scale(.98); }
+      to   { opacity:1; transform:none; }
+    }
+
+    body::before, body::after {
+      content: ''; position: absolute; border-radius: 50%; pointer-events: none; z-index: 0;
+    }
+    body::before { width: 240px; height: 240px; top: -100px; left: -80px; background: #6366f1; filter: blur(88px); opacity: .16; }
+    body::after { width: 180px; height: 180px; bottom: -7px; right: -60px; background: #8b5cf6; filter: blur(72px); opacity: .12; }
+
+    .cts-noise { position: absolute; inset: 0; pointer-events: none; z-index: 0; opacity: .03; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 180px; }
+    .cts-top-strip { position: absolute; top: 0; left: 0; right: 0; height: 2px; z-index: 10; background: var(--grad-brand); box-shadow: 0 0 16px rgba(99,102,241,.65); border-radius: var(--r-popup) var(--r-popup) 0 0; }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+    .fu1 { animation: fadeUp .4s .07s var(--ease-out) both; }
+    .fu2 { animation: fadeUp .4s .13s var(--ease-out) both; }
+    .fu3 { animation: fadeUp .4s .19s var(--ease-out) both; }
+    .fu4 { animation: fadeUp .4s .25s var(--ease-out) both; }
+    .fu5 { animation: fadeUp .4s .31s var(--ease-out) both; }
+
+    .cts-shell { position: relative; z-index: 1; padding: 20px 20px 20px; display: flex; flex-direction: column; }
+    .cts-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .cts-brand { display: flex; align-items: center; gap: 12px; }
+    .cts-logo { width: 40px; height: 40px; background: var(--grad-brand); border-radius: var(--r-logo); display: flex; align-items: center; justify-content: center; box-shadow: var(--sh-logo); flex-shrink: 0; position: relative; overflow: hidden; transition: transform .2s var(--ease-out), box-shadow .2s ease; }
+    .cts-logo:hover { transform: scale(1.06) rotate(-3deg); box-shadow: 0 4px 20px rgba(99,102,241,.65); }
+    .cts-logo::after { content: ''; position: absolute; top: -50%; left: -80%; width: 50%; height: 200%; background: rgba(255,255,255,.22); transform: skewX(-18deg); animation: logoShimmer 4s 1s infinite; }
+    @keyframes logoShimmer { 0%,100% { left:-80%; opacity:0; } 10% { opacity:1; } 50% { left:145%; opacity:1; } 55%,100% { left:145%; opacity:0; } }
+    .cts-logo svg { color:#fff; position:relative; z-index:1; }
+
+    .cts-title-group { display:flex; flex-direction:column; gap:3px; }
+    .cts-title { font-size: 17px; font-weight: 900; letter-spacing: -.03em; line-height: 1; background: var(--grad-brand); background-size: 200%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradFlow 5s ease infinite; }
+    @keyframes gradFlow { 0%,100% { background-position:0% 50%; } 50% { background-position:100% 50%; } }
+    .cts-subtitle { font-size: 11.5px; font-weight: 500; color: var(--text-muted); letter-spacing: .005em; }
+
+    .cts-live-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; background: rgba(16,185,129,.08); border: 1px solid rgba(16,185,129,.2); border-radius: 999px; font-size: 9.5px; font-weight: 800; color: var(--green); letter-spacing: .07em; flex-shrink: 0; }
+    .cts-live-dot { width: 5px; height: 5px; background: var(--green); border-radius: 50%; position: relative; flex-shrink: 0; }
+    .cts-live-dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; background: var(--green); opacity: .3; animation: livePulse 2s ease-out infinite; }
+    @keyframes livePulse { 0% { transform:scale(1); opacity:.4; } 70% { transform:scale(2.6); opacity:0; } 100% { transform:scale(2.6); opacity:0; } }
+
+    .cts-divider { height: 1px; background: var(--bg-divider); margin-bottom: 18px; position: relative; }
+    .cts-divider::before { content: ''; position: absolute; left:0; top:0; width: 48px; height: 1px; background: var(--grad-brand); border-radius: 2px; opacity: .7; }
+    
+    /* Dynamic Colors text utility for status updates */
+    .text-gray-400 { color: #9ca3af; }
+    .text-emerald-400 { color: #34d399; }
+    .text-red-400 { color: #f87171; }
+    .text-amber-400 { color: #fbbf24; }
+    .cts-description { font-size: 13px; line-height: 1.7; margin-bottom: 18px; padding: 0 2px; transition: color 0.2s ease; }
+
+    #clean-btn { width: 100%; padding: 15px 20px; background: var(--grad-brand-btn); background-size: 200% 200%; border: none; border-radius: var(--r-btn); font-family: inherit; font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -.01em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: var(--sh-btn); position: relative; overflow: hidden; transition: all 0.18s var(--ease-out); margin-bottom: 10px; }
+    #clean-btn::before { content: ''; position: absolute; top: -50%; left: -80%; width: 50%; height: 200%; background: rgba(255,255,255,.15); transform: skewX(-18deg); transition: left .55s ease; }
+    #clean-btn:hover::before { left: 145%; }
+    #clean-btn:hover { transform: translateY(-2px); box-shadow: var(--sh-btn-hover); }
+    #clean-btn:active { transform: translateY(0); box-shadow: var(--sh-btn); }
+    #clean-btn:disabled { opacity: .55; cursor:not-allowed; transform:none; box-shadow: none; }
+
+    /* Custom CSS Loading Spinner Alignment */
+    .cts-spinner { width: 16px; height: 16px; border: 2.5px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: none; flex-shrink: 0; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .animate-spin-slow { animation: spin 1s linear infinite; }
+    
+    #clean-btn.loading #btn-spinner { display: block; }
+    #clean-btn.loading #btn-icon { display: none; }
+    #clean-btn.done { background: var(--grad-green); box-shadow: 0 4px 20px var(--green-glow), 0 1px 4px rgba(16,185,129,.3); }
+
+    .cts-actions-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; transition: all 0.2s; }
+    .cts-sec-btn { 
+      display: inline-flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 6px; 
+      padding: 12px 10px; 
+      
+      border-radius: var(--r-btn); 
+      font-family: inherit; 
+      font-size: 13px; 
+      font-weight: 700; 
+      cursor: pointer; 
+      transition: all 0.18s ease; 
+
+      background: rgba(255, 255, 255, 0.03) !important; 
+      border: 1px solid #374151 !important; 
+      color: #c4cde0 !important; 
+    }
+    
+    .cts-sec-btn:hover { 
+      /* Hover style (already good, just protecting) */
+      border-color: #6b7280 !important; 
+      color: #e5e7eb !important; 
+      background: rgba(255, 255, 255, 0.08) !important; 
+    }
+
+    .cts-sec-btn:active { 
+      transform: translateY(0); 
+    }
+
+    .hidden { display: none !important; }
+
+    .cts-footer-divider { height: 1px; background: var(--bg-divider); margin-bottom: 14px; }
+    .cts-footer { display: flex; align-items: center; justify-content: center; }
+    .cts-footer p { margin: 0; font-size: 10px; color: #4e596e; font-weight: 500; }
+  </style>
+</head>
+<body>
+
+  <div class="cts-noise"></div>
+  <div class="cts-top-strip"></div>
+
+  <div class="cts-shell">
+    <div class="cts-header fu1">
+      <div class="cts-brand">
+          <div class="logo-wrap">
+            <img src="icon48.png" alt="Logo" style="width: 40px; height: 40px; object-fit: contain; position: relative; z-index: 1;" />
+          </div>
+        <div class="cts-title-group">
+          <span class="cts-title">CutTheSlop</span>
+          <span class="cts-subtitle">AI-powered page cleaner</span>
+        </div>
+      </div>
+      <div class="cts-live-badge">
+        <span class="cts-live-dot"></span>LIVE
+      </div>
+    </div>
+
+    <div class="cts-divider fu2"></div>
+
+    <div class="api-key-container" style="background: var(--bg-card); border: 1px solid var(--border-card); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+      <label for="api-key-input" style="display: block; color: var(--text-secondary); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Gemini API Key</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="password" id="api-key-input" placeholder="AIzaSy..." style="flex: 1; background: #080811; border: 1px solid var(--border-subtle); border-radius: 6px; padding: 6px 10px; color: var(--text-primary); font-size: 12px; outline: none;" />
+        <button id="save-key-btn" style="background: #4f46e5; border: none; border-radius: 6px; padding: 6px 12px; color: #fff; font-size: 12px; font-weight: 500; cursor: pointer; transition: background 0.2s;">Save</button>
+      </div>
+      <p id="api-key-status" style="font-size: 11px; margin-top: 4px; margin-bottom: 0;" class="text-gray-400"></p>
+    </div>
+
+    <div class="status-area fu2">
+      <p id="status-text" class="cts-description text-gray-400">
+        Click below to strip ads, fluff, and distractions from this page.
+      </p>
+    </div>
+
+    <button id="clean-btn" class="fu3">
+      <svg id="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px; height:16px;">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+      <svg id="btn-spinner" class="cts-spinner animate-spin-slow" fill="none" viewBox="0 0 24 24" style="width:16px; height:16px;">
+        <circle opacity="0.25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path opacity="0.75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+      </svg>
+      <span id="btn-label">Clean Page</span>
+    </button>
+
+    <div class="cts-actions-row fu3">
+      <button id="restore-btn" class="cts-sec-btn hidden">
+        Restore Original Page
+      </button>
+    </div>
+
+    <div class="cts-footer-divider"></div>
+
+    <div class="cts-footer fu4">
+      <p>Powered by Google Gemini</p>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
